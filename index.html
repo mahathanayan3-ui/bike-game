@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>NAYEN BIKE RACING GAME</title>
+
+<style>
+*{box-sizing:border-box;user-select:none}
+body{
+margin:0;background:#101010;color:white;font-family:Arial;
+text-align:center;overflow-x:hidden
+}
+h1{font-size:25px;margin:10px 0 3px}
+.credit{font-size:14px;margin-bottom:8px}
+
+.screen{display:none}
+.active{display:block}
+
+button{
+border:0;border-radius:12px;padding:12px 18px;
+margin:5px;font-size:17px;font-weight:bold
+}
+.mainBtn{background:#18b957;color:white}
+.back{background:#777;color:white}
+.shopBtn{background:#ff9800;color:white}
+
+#home,#shop{
+width:340px;max-width:95%;margin:20px auto;
+padding:20px;border-radius:18px;background:#222
+}
+
+#shop h2{margin-top:0}
+
+.bikes{
+display:grid;grid-template-columns:1fr 1fr;gap:10px
+}
+
+.bikeCard{
+background:#333;padding:12px;border-radius:14px
+}
+
+.bikeEmoji{font-size:55px}
+.price{color:#ffd000;font-weight:bold}
+
+#game{
+width:340px;height:560px;margin:auto;
+position:relative;overflow:hidden;
+border:4px solid white;border-radius:14px;
+background:#277a32
+}
+
+#road{
+position:absolute;left:10%;width:80%;height:100%;
+background:#353535
+}
+
+.edge{
+position:absolute;top:0;width:5px;height:100%;
+background:#fff;z-index:2
+}
+.edgeL{left:10%}.edgeR{right:10%}
+
+.lane{
+position:absolute;width:6px;height:75px;
+background:#fff;left:50%;transform:translateX(-50%);
+z-index:1
+}
+
+/* PLAYER BIKE */
+#player{
+position:absolute;width:48px;height:86px;
+bottom:30px;left:146px;z-index:5
+}
+.pWheel{
+position:absolute;width:19px;height:30px;
+background:#050505;border:3px solid #aaa;border-radius:50%;
+left:14px
+}
+.pWheel.one{top:0}.pWheel.two{bottom:0}
+.pBody{
+position:absolute;width:31px;height:50px;left:8px;top:18px;
+background:#e21b1b;border:3px solid white;
+border-radius:13px 13px 8px 8px
+}
+.pLight{
+position:absolute;width:13px;height:9px;
+background:#fff;border-radius:50%;left:17px;top:21px
+}
+
+/* CARS */
+.car{
+position:absolute;width:50px;height:82px;
+border:3px solid #111;border-radius:10px;
+z-index:4
+}
+.car:before,.car:after{
+content:"";position:absolute;width:9px;height:17px;
+background:#111;top:8px;border-radius:4px
+}
+.car:before{left:-7px}.car:after{right:-7px}
+.carRed{background:#e53935}
+.carBlue{background:#2196f3}
+.carYellow{background:#ffd600}
+.carGreen{background:#18a558}
+
+#hud{
+width:340px;max-width:95%;margin:7px auto;
+display:flex;justify-content:space-between;
+font-size:15px;font-weight:bold
+}
+
+#controls{
+width:340px;max-width:95%;margin:5px auto
+}
+#controls button{width:100px}
+#speedBtn{background:#9c27b0;color:white}
+#left,#right{background:#eee}
+
+#gameOver{
+position:absolute;inset:0;background:rgba(0,0,0,.82);
+z-index:20;display:none;
+align-items:center;justify-content:center;
+flex-direction:column
+}
+#gameOver h2{font-size:32px;color:#ff4444}
+</style>
+</head>
+
+<body>
+
+<h1>🏍️ NAYEN BIKE RACING GAME</h1>
+<div class="credit">created by NAYEN kumar class 9(a)</div>
+
+<div id="home" class="screen active">
+<h2>🏁 BIKE RACING</h2>
+<p>Coins: 🪙 <span id="homeCoins">0</span></p>
+<button class="mainBtn" onclick="openShop()">🏍️ BIKE SHOP</button>
+<button class="mainBtn" onclick="startGame()">▶️ START RACE</button>
+</div>
+
+<div id="shop" class="screen">
+<h2>🏍️ BIKE SHOP</h2>
+<p>Coins: 🪙 <span id="shopCoins">0</span></p>
+
+<div class="bikes">
+
+<div class="bikeCard">
+<div class="bikeEmoji">🏍️</div>
+<b>Red Bike</b>
+<div class="price">FREE</div>
+<button class="shopBtn" onclick="selectBike(0)">SELECT</button>
+</div>
+
+<div class="bikeCard">
+<div class="bikeEmoji">🏍️</div>
+<b>Blue Bike</b>
+<div class="price">50 🪙</div>
+<button class="shopBtn" onclick="buyBike(1,50)">BUY</button>
+</div>
+
+<div class="bikeCard">
+<div class="bikeEmoji">🏍️</div>
+<b>Green Bike</b>
+<div class="price">100 🪙</div>
+<button class="shopBtn" onclick="buyBike(2,100)">BUY</button>
+</div>
+
+<div class="bikeCard">
+<div class="bikeEmoji">🏍️</div>
+<b>Golden Bike</b>
+<div class="price">200 🪙</div>
+<button class="shopBtn" onclick="buyBike(3,200)">BUY</button>
+</div>
+
+</div>
+
+<br>
+<button class="back" onclick="goHome()">⬅️ BACK</button>
+</div>
+
+<div id="race" class="screen">
+
+<div id="hud">
+<span>🪙 <span id="coins">0</span></span>
+<span>📏 <span id="distance">0</span> m</span>
+<span>💥 <span id="hits">0</span>/3</span>
+</div>
+
+<div id="game">
+
+<div id="road"></div>
+<div class="edge edgeL"></div>
+<div class="edge edgeR"></div>
+
+<div class="lane" style="top:-80px"></div>
+<div class="lane" style="top:100px"></div>
+<div class="lane" style="top:280px"></div>
+<div class="lane" style="top:460px"></div>
+
+<div id="player">
+<div class="pWheel one"></div>
+<div class="pWheel two"></div>
+<div class="pBody"></div>
+<div class="pLight"></div>
+</div>
+
+<div id="gameOver">
+<h2>GAME OVER</h2>
+<p>Distance: <span id="finalDistance">0</span> m</p>
+<p>Coins earned: 🪙 <span id="finalCoins">0</span></p>
+<button class="mainBtn" onclick="startGame()">🔄 RESTART</button>
+<button class="back" onclick="goHome()">🏠 HOME</button>
+</div>
+
+</div>
+
+<div id="controls">
+<button id="left">⬅️</button>
+<button id="speedBtn">⚡ SPEED</button>
+<button id="right">➡️</button>
+</div>
+
+</div>
+
+<script>
+let coins=Number(localStorage.getItem("coins")||0);
+
+let owned=JSON.parse(
+localStorage.getItem("ownedBikes")||"[true,false,false,false]"
+);
+
+let selectedBike=Number(
+localStorage.getItem("selectedBike")||0
+);
+
+let bikeX=146;
+let speed=5;
+let distance=0;
+let hits=0;
+let playing=false;
+
+let cars=[];
+let animation;
+let spawnTimer;
+let lastTime=0;
+
+const player=document.getElementById("player");
+const game=document.getElementById("game");
+
+function save(){
+localStorage.setItem("coins",coins);
+localStorage.setItem("ownedBikes",JSON.stringify(owned));
+localStorage.setItem("selectedBike",selectedBike);
+}
+
+function updateCoins(){
+document.getElementById("homeCoins").textContent=coins;
+document.getElementById("shopCoins").textContent=coins;
+}
+
+updateCoins();
+
+function show(id){
+document.querySelectorAll(".screen").forEach(x=>{
+x.classList.remove("active");
+});
+document.getElementById(id).classList.add("active");
+}
+
+function goHome(){
+playing=false;
+cancelAnimationFrame(animation);
+clearInterval(spawnTimer);
+
+cars.forEach(c=>c.remove());
+cars=[];
+
+updateCoins();
+show("home");
+}
+
+function openShop(){
+updateCoins();
+show("shop");
+}
+
+function selectBike(id){
+if(!owned[id]){
+alert("Pehle bike kharido!");
+return;
+}
+
+selectedBike=id;
+save();
+alert("Bike selected!");
+}
+
+function buyBike(id,price){
+if(owned[id]){
+selectBike(id);
+return;
+}
+
+if(coins<price){
+alert("Coins kam hain!");
+return;
+}
+
+coins-=price;
+owned[id]=true;
+selectedBike=id;
+
+save();
+updateCoins();
+
+alert("🏍️ Bike kharid li!");
+}
+
+function setBikeColor(){
+const body=document.querySelector(".pBody");
+
+const colors=[
+"#e21b1b",
+"#1976d2",
+"#19a65a",
+"#ffd000"
+];
+
+body.style.background=colors[selectedBike];
+}
+
+function moveBike(amount){
+if(!playing)return;
+
+bikeX+=amount;
+
+if(bikeX<43)bikeX=43;
+if(bikeX>250)bikeX=250;
+
+player.style.left=bikeX+"px";
+}
+
+document.getElementById("left").onclick=()=>{
+moveBike(-32);
+};
+
+document.getElementById("right").onclick=()=>{
+moveBike(32);
+};
+
+document.addEventListener("keydown",e=>{
+if(e.key==="ArrowLeft")moveBike(-32);
+if(e.key==="ArrowRight")moveBike(32);
+});
+
+document.getElementById("speedBtn").onclick=()=>{
+if(!playing)return;
+
+speed+=1;
+
+if(speed>12)speed=12;
+};
+
+function createCar(){
+if(!playing)return;
+
+const car=document.createElement("div");
+
+const colors=["carRed","carBlue","carYellow","carGreen"];
+
+car.className="car "+
+colors[Math.floor(Math.random()*colors.length)];
+
+const lanes=[55,145,235];
+
+car.style.left=
+lanes[Math.floor(Math.random()*lanes.length)]+"px";
+
+car.style.top="-90px";
+
+game.appendChild(car);
+cars.push(car);
+}
+
+function hitTest(a,b){
+const A=a.getBoundingClientRect();
+const B=b.getBoundingClientRect();
+
+return !(
+A.bottom<B.top||
+A.top>B.bottom||
+A.right<B.left||
+A.left>B.right
+);
+}
+
+function gameOver(){
+playing=false;
+
+cancelAnimationFrame(animation);
+clearInterval(spawnTimer);
+
+document.getElementById("finalDistance").textContent=
+Math.floor(distance);
+
+const earned=Math.floor(distance/10)*5;
+
+document.getElementById("finalCoins").textContent=earned;
+
+coins+=earned;
+
+save();
+updateCoins();
+
+document.getElementById("gameOver").style.display="flex";
+}
+
+function gameLoop(time){
+if(!playing)return;
+
+if(!lastTime)lastTime=time;
+
+const delta=Math.min((time-lastTime)/16.67,2);
+lastTime=time;
+
+distance+=speed*0.025*delta;
+
+document.getElementById("distance").textContent=
+Math.floor(distance);
+
+document.querySelectorAll(".lane").forEach(line=>{
+let y=parseFloat(line.style.top);
+
+y+=speed*delta;
+
+if(y>560)y=-80;
+
+line.style.top=y+"px";
+});
+
+cars.forEach((car,index)=>{
+let y=parseFloat(car.style.top);
+
+y+=speed*delta;
+
+car.style.top=y+"px";
+
+if(hitTest(player,car)){
+car.remove();
+cars.splice(index,1);
+
+hits++;
+
+document.getElementById("hits").textContent=hits;
+
+if(hits>=3){
+gameOver();
+}
+
+return;
+}
+
+if(y>570){
+car.remove();
+cars.splice(index,1);
+}
+});
+
+animation=requestAnimationFrame(gameLoop);
+}
+
+function startGame(){
+
+cars.forEach(c=>c.remove());
+cars=[];
+
+distance=0;
+hits=0;
+speed=5;
+bikeX=146;
+lastTime=0;
+
+player.style.left=bikeX+"px";
+
+document.getElementById("distance").textContent="0";
+document.getElementById("hits").textContent="0";
+document.getElementById("gameOver").style.display="none";
+
+setBikeColor();
+
+show("race");
+
+playing=true;
+
+clearInterval(spawnTimer);
+
+spawnTimer=setInterval(()=>{
+if(playing)createCar();
+},900);
+
+animation=requestAnimationFrame(gameLoop);
+}
+</script>
+
+</body>
+  </html>
